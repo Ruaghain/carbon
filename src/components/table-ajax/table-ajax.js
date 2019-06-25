@@ -6,25 +6,6 @@ import {
 } from '../table';
 import Logger from '../../utils/logger';
 
-/**
- * A Table Ajax Widget
- *
- * == How to use a Table Ajax in a component
- *
- * In your file
- *
- *   import Table from 'carbon-react/lib/components/table-ajax';
- *   import { TableRow, TableCell, TableHeader } from 'carbon-react/lib/components/table';
- *
- * To render a Table please see the Table Component
- *
- * TableAjax requires a path to be provided
- *
- * <TableAjax
- *    path='./path'
- * >
- *
- */
 class TableAjax extends Table {
   /**
    * Timeout for firing ajax request
@@ -57,6 +38,22 @@ class TableAjax extends Table {
      * @type {Function}
      */
     formatRequest: PropTypes.func,
+
+    /**
+     * A callback function used to set the Ajax
+     * headers using custom ones provided by the consumer
+     *
+     * Expected return object format
+     * {
+        'Accept': 'application/json',
+        'jwt': 'secret',
+        ...
+       }
+     *
+     * @property getCustomHeaders
+     * @type {Function}
+     */
+    getCustomHeaders: PropTypes.func,
 
     /**
      * A callback function used to format the Ajax
@@ -98,7 +95,23 @@ class TableAjax extends Table {
      * @property onAjaxError
      * @type {Function}
      */
-    onAjaxError: PropTypes.func
+    onAjaxError: PropTypes.func,
+
+    /**
+     * A prop to allow the override of the default get request and perform a post.
+     * @property postAction
+     * @type {Boolean}
+
+     */
+    postAction: PropTypes.bool,
+
+    /**
+     * Enable the ability to send cookies from the origin.
+     *
+     * @property withCredentials
+     * @type: {Boolean}
+     */
+    withCredentials: PropTypes.bool
   }
 
   static defaultProps = {
@@ -327,15 +340,24 @@ class TableAjax extends Table {
         dataState: 'requested',
         ariaBusy: true
       });
-      this._request = Request
-        .get(this.props.path)
-        .set('Accept', 'application/json')
-        .query(this.queryParams(element, options))
-        .end((err, response) => {
-          this._hasRetreivedData = true;
-          this.handleResponse(err, response);
-          if (resetHeight) { this.resetTableHeight(); }
-        });
+
+      if (this.props.postAction) {
+        this._request = Request.post(this.props.path)
+          .set(this.getHeaders())
+          .send(this.queryParams(element, options));
+      } else {
+        this._request = Request.get(this.props.path)
+          .set(this.getHeaders())
+          .query(this.queryParams(element, options));
+      }
+
+      if (this.props.withCredentials) this._request.withCredentials();
+
+      this._request.end((err, response) => {
+        this._hasRetreivedData = true;
+        this.handleResponse(err, response);
+        if (resetHeight) { this.resetTableHeight(); }
+      });
     }, timeout);
   }
 
@@ -395,10 +417,23 @@ class TableAjax extends Table {
     if (options.sortOrder) { query.sord = options.sortOrder; }
     if (options.sortedColumn) { query.sidx = options.sortedColumn; }
 
+    if (this.props.postAction) {
+      return query;
+    }
+
     if (this.props.formatRequest) {
       return serialize(this.props.formatRequest(query));
     }
     return serialize(query);
+  }
+
+  /**
+   * Retrieve headers to use for the request
+   *
+   * @method getHeaders
+   */
+  getHeaders = () => {
+    return this.props.getCustomHeaders ? this.props.getCustomHeaders() : { Accept: 'application/json' };
   }
 
   /**

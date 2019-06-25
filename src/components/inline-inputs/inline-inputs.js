@@ -36,7 +36,7 @@ const columnWrapper = (children) => {
 
 const InlineInputs = (props) => {
   return (
-    <div className={ classNames('carbon-inline-inputs', props.className) }>
+    <div data-component='inline-inputs' className={ classNames('carbon-inline-inputs', props.className) }>
       { Label(props) }
       <Row gutter='none' className='carbon-inline-inputs__inputs'>
         { columnWrapper(props.children) }
@@ -72,17 +72,11 @@ Label.defaultProps = {
 InlineInputs.propTypes = assign({}, {
   /**
    * Children elements
-   *
-   * @property children
-   * @type {Node}
    */
   children: PropTypes.node,
 
   /**
    * A custom class name for the component.
-   *
-   * @property className
-   * @type {String}
    */
   className: PropTypes.string
 }, Label.propTypes);

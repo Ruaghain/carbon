@@ -2,7 +2,7 @@ import React from 'react';
 import Immutable from 'immutable';
 import { TableAjax, TableRow } from './table-ajax';
 import { shallow, mount } from 'enzyme';
-import { elementsTagTest, rootTagTest } from '../../utils/helpers/tags/tags-specs';
+import { rootTagTest } from '../../utils/helpers/tags/tags-specs';
 import Pager from './../pager';
 
 import Request from 'superagent';
@@ -252,7 +252,7 @@ describe('TableAjax', () => {
 
       expect(pager.props().totalRecords).toEqual('1');
 
-      const table = wrapper.find('.carbon-table')
+      const table = wrapper.find('table')
       expect(table.length).toEqual(1);
       expect(wrapper.find('[data-state="loaded"]').length).toEqual(1);
       expect(table.props().ariaBusy).toBeFalsy();
@@ -277,8 +277,101 @@ describe('TableAjax', () => {
 
         instance.emitOnChangeCallback('data', options);
         jest.runTimersToTime(251);
-
+        expect(Request.get).toHaveBeenLastCalledWith('/test');
+        expect(Request.query).toHaveBeenLastCalledWith("page=1&rows=5");
         expect(instance.resetTableHeight).toBeCalled();
+      });
+    });
+
+    describe('when postAction is true', () => {
+      beforeEach(() => {
+        spy = jasmine.createSpy('onChange spy');
+        wrapper = mount(
+          <TableAjax
+            onAjaxError={ () => {} }
+            className="foo"
+            path='/test'
+            onChange={ spy }
+            postAction
+          >
+            <TableRow />
+          </TableAjax>
+        );
+        instance = wrapper.instance();
+      });
+
+      it('resets the select all component', () => {
+        let selectAllComponent = {
+          setState: jasmine.createSpy()
+        };
+        instance.selectAllComponent = selectAllComponent;
+        instance.emitOnChangeCallback('data', options);
+        expect(selectAllComponent.setState).toHaveBeenCalledWith({ selected: false });
+        expect(instance.selectAllComponent).toBe(null);
+      });
+
+      describe('when page size is less than previous page size', () => {
+        it('calls resetTableHeight on successful response', () => {
+          instance.resetTableHeight = jest.fn();
+          options = { currentPage: '1', pageSize: '5' }
+          Request.withCredentials = jest.fn();
+          Request.__setMockResponse({
+            status() {
+              return 200;
+            },
+            ok() {
+              return true;
+            },
+            body: {
+              data: 'foo'
+            }
+          });
+
+          instance.emitOnChangeCallback('data', options);
+          jest.runTimersToTime(251);
+          expect(Request.post).toHaveBeenLastCalledWith('/test');
+          expect(Request.send).toHaveBeenLastCalledWith({ page: '1', rows: '5' });
+          expect(instance.resetTableHeight).toBeCalled();
+          expect(Request.withCredentials).not.toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('when withCredentials is true', () => {
+      beforeEach(() => {
+        spy = jasmine.createSpy('onChange spy');
+        wrapper = mount(
+          <TableAjax
+            withCredentials
+            onAjaxError={ () => {} }
+            className="foo"
+            path='/test'
+            onChange={ spy }
+          >
+            <TableRow />
+          </TableAjax>
+        );
+        instance = wrapper.instance();
+      });
+
+      it('calls withCredentials', () => {
+        options = { currentPage: '1', pageSize: '5' }
+        Request.withCredentials = jest.fn();
+        Request.__setMockResponse({
+          status() {
+            return 200;
+          },
+          ok() {
+            return true;
+          },
+          body: {
+            data: 'foo'
+          }
+        });
+
+        instance.emitOnChangeCallback('data', options);
+        jest.runTimersToTime(251);
+        expect(Request.withCredentials).toHaveBeenCalled();
       });
     });
   });
@@ -353,16 +446,9 @@ describe('TableAjax', () => {
   });
 
   describe('handleRequest', () => {
-    let wrapper,
-        response;
+    let wrapper;
 
     beforeEach(() => {
-      response = {
-        body: {
-          records: 1
-        }
-      };
-
       wrapper = mount(
         <TableAjax
           path='/test'
@@ -383,6 +469,27 @@ describe('TableAjax', () => {
         expect(
           wrapper.instance().queryParams('', options)
         ).toEqual('foo=bar')
+      });
+    });
+
+    describe('when setting headers', () => {
+      it('sets headers using getCustomHeaders prop', () => {
+        const headers = { 'Accepts': 'application/json', 'jwt': 'very secret stuff' };
+        const mockGetCustomHeaders = () => { return headers };
+
+        wrapper.setProps({
+          getCustomHeaders: mockGetCustomHeaders
+        });
+
+        expect(
+          wrapper.instance().getHeaders()
+        ).toEqual(headers)
+      });
+
+      it('sets default accept header without getCustomHeaders prop', () => {
+        expect(
+          wrapper.instance().getHeaders()
+        ).toEqual({"Accept": "application/json"})
       });
     });
   });
@@ -470,7 +577,7 @@ describe('TableAjax', () => {
         expect(onError).toBeCalledWith(error, response);
 
         expect(wrapper.instance().dataState()).toEqual('errored');
-        const table = wrapper.find('.carbon-table');
+        const table = wrapper.find('table');
         expect(table.prop('aria-busy')).toBeFalsy();
       });
     });
@@ -487,7 +594,7 @@ describe('TableAjax', () => {
         expect(console.warn).toBeCalled();
 
         expect(wrapper.instance().dataState()).toEqual('errored');
-        const table = wrapper.find('.carbon-table');
+        const table = wrapper.find('table');
         expect(table.prop('aria-busy')).toBeFalsy();
       });
     });

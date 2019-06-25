@@ -1,5 +1,4 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
 import TestUtils from 'react-dom/test-utils';
 import { mount, shallow } from 'enzyme';
 import Tooltip from 'components/tooltip';
@@ -12,35 +11,24 @@ describe('Icon', () => {
   let icons = [
     'basket',
     'bin',
-    'business',
-    'csv',
     'chevron',
     'completed',
     'dribbble',
-    'edit',
     'email',
     'external-link',
     'github',
     'individual',
-    'key',
     'location',
-    'message',
     'minus',
-    'mobile',
-    'pdf',
     'paperclip',
     'payment',
-    'phone',
     'plus',
-    'print',
     'processing',
     'progress',
-    'refresh',
     'remove',
     'sort-down',
     'sort-up',
     'submitted',
-    'sync',
     'twitter',
     'white-tick'
   ]

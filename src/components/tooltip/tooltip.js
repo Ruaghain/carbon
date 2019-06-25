@@ -85,8 +85,28 @@ class Tooltip extends React.Component {
      * @type {String}
      * @default 'bottom'
      */
-    position: PropTypes.string
+    position: PropTypes.string,
 
+    /**
+     * Sets a onMouseEnter function
+     *
+     * @property onMouseEnter
+     * @type {Function}
+     */
+    onMouseEnter: PropTypes.func,
+
+    /**
+     * Sets a onMouseLeave function
+     *
+     * @property onMouseLeave
+     * @type {Function}
+     */
+    onMouseLeave: PropTypes.func,
+
+    /**
+     * Defines the message type
+     */
+    type: PropTypes.string
   };
 
   static defaultProps = {
@@ -107,6 +127,7 @@ class Tooltip extends React.Component {
       'carbon-tooltip',
       `carbon-tooltip--position-${this.props.position}`,
       `carbon-tooltip--pointer-align-${this.props.align}`,
+      `carbon-tooltip--type-${this.props.type}`,
       this.props.className
     );
   }
@@ -131,6 +152,9 @@ class Tooltip extends React.Component {
     if (this.props.id) {
       tooltipProps.id = this.props.id;
     }
+
+    if (this.props.onMouseEnter) { tooltipProps.onMouseEnter = this.props.onMouseEnter; }
+    if (this.props.onMouseLeave) { tooltipProps.onMouseLeave = this.props.onMouseLeave; }
 
     return (
       <div

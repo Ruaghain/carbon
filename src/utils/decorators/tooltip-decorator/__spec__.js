@@ -8,6 +8,7 @@ import { shallow } from 'enzyme';
 class BasicClass extends React.Component {
   componentWillUpdate() {}
   componentDidUpdate() {}
+  componentDidMount() {}
   componentWillReceiveProps() {}
   onBlur = () => {}
   onFocus = () => {}
@@ -35,6 +36,7 @@ class BasicClass extends React.Component {
 class StrippedClass extends React.Component {
   componentWillUpdate() {}
   componentDidUpdate() {}
+  componentDidMount() {}
   componentWillReceiveProps() {}
   onBlur = () => {}
   onFocus = () => {}
@@ -87,6 +89,21 @@ describe('tooltip-decorator', () => {
         topTooltip.componentWillReceiveProps();
         expect(topTooltip.setState).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('componentDidMount', () => {
+    it('positions the tooltip if visible', () => {
+      const visibleTooltip = TestUtils.renderIntoDocument(<DecoratedClassOne tooltipMessage='Hello' tooltipVisible />);
+      spyOn(visibleTooltip, 'positionTooltip');
+      visibleTooltip.componentDidMount();
+      expect(visibleTooltip.positionTooltip).toHaveBeenCalled();
+    });
+    
+    it('does not position the tooltip if not visible', () => {
+      spyOn(topTooltip, 'positionTooltip');
+      topTooltip.componentDidMount();
+      expect(topTooltip.positionTooltip).not.toHaveBeenCalled();
     });
   });
 
@@ -146,6 +163,14 @@ describe('tooltip-decorator', () => {
       expect(topTooltip.setState).toHaveBeenCalledWith({ isVisible: true });
     });
 
+    it('clears the timeout', () => {
+      spyOn(window, 'clearTimeout');
+
+      topTooltip.onShow();
+      jest.runTimersToTime(300);
+      expect(window.clearTimeout).toHaveBeenCalledWith(topTooltip._hideTooltipTimeout);
+    });
+
     it('calls positionTooltip after a timeout', () => {
       topTooltip.onShow();
       jest.runTimersToTime(300);
@@ -154,16 +179,18 @@ describe('tooltip-decorator', () => {
   });
 
   describe('on hide', () => {
-    it('hides the tooltip', () => {
+    it('hides the tooltip after a timeout', () => {
       spyOn(topTooltip, 'setState');
       topTooltip.onHide();
+      jest.runTimersToTime(300);
       expect(topTooltip.setState).toHaveBeenCalledWith({ isVisible: false });
     });
 
     it('clears the timeout', () => {
       spyOn(window, 'clearTimeout');
       topTooltip.onHide();
-      expect(window.clearTimeout).toHaveBeenCalledWith(topTooltip._tooltipTimeout);
+      jest.runTimersToTime(300);
+      expect(window.clearTimeout).toHaveBeenCalledWith(topTooltip._showTooltipTimeout);
     });
   });
 
@@ -186,7 +213,6 @@ describe('tooltip-decorator', () => {
         getBoundingClientRect: () => ({ top: 100, bottom: 100, left: 100, right: 100 })
       }
     });
-
 
     describe('when positioned above the target', () => {
       beforeEach(()  => {
@@ -217,6 +243,20 @@ describe('tooltip-decorator', () => {
         topTooltip.positionTooltip(tooltip, target);
         expect(tooltip.style.left).toEqual('65px');
         expect(tooltip.style.top).toEqual('42.5px');
+      });
+
+      describe('when the tooltip is offscreen', () => {
+        it('realigns to the right', () => {
+          topTooltip.onShow();
+          jest.runTimersToTime(100);
+          const tooltip = topTooltip.getTooltip();
+          const target = topTooltip.getTarget();
+          const innerWidth = window.innerWidth;
+          window.innerWidth = 0;
+          topTooltip.positionTooltip(tooltip, target);
+          expect(topTooltip.state.tooltipAlign).toEqual('right');
+          window.innerWidth = innerWidth;
+        });
       });
 
       describe('when the pointer is aligned to the right', () => {
@@ -613,7 +653,7 @@ describe('tooltip-decorator', () => {
   describe('tooltipHTML', () => {
     describe('when a tooltipMessage is defined', () => {
       it('returns a Tooltip', () => {
-        expect(topTooltip.tooltipHTML).toBeDefined();
+        expect(topTooltip.getTooltip()).toBeDefined();
       });
     });
   });
