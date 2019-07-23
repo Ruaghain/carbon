@@ -6,7 +6,6 @@ import {
   select
 } from '@storybook/addon-knobs';
 import { action } from '@storybook/addon-actions';
-import I18n from 'i18n-js';
 import Form from '../form';
 import Textbox from '../../__experimental__/components/textbox';
 import TextboxLegacy from '../textbox';
@@ -16,12 +15,7 @@ import { Select, Option } from '../../__experimental__/components/select';
 import PresenceValidator from '../../utils/validations/presence';
 import { Row, Column } from '../row';
 import OptionsHelper from '../../utils/helpers/options-helper';
-
-I18n.translations.en.errors = {
-  messages: {
-    blank: 'This field is required.'
-  }
-};
+import Textarea from '../../__experimental__/components/textarea';
 
 const presenceStore = new Store({ value: '' });
 const asyncStore = new Store({ value: '' });
@@ -68,7 +62,7 @@ const asyncValidator = value => new Promise((resolve, reject) => {
 storiesOf('Validations', module)
   .addParameters({
     info: {
-      propTablesExclude: [Column, Row, Form, Textbox, State]
+      propTablesExclude: [ButtonToggle, ButtonToggleGroup, Column, Row, Form, Textbox, State, Textarea]
     }
   })
   .add('Basic', () => {

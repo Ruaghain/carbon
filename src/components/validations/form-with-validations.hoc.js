@@ -7,19 +7,17 @@ const ValidationsContext = React.createContext();
 const withValidations = (WrappedComponent) => {
   class WithValidations extends React.Component {
     state = {
-      ...buildInitialValidationState(),
-      formIsValidating: false
-    }
-
-    static propTypes = {
-      children: PropTypes.node // Children elements
+      formIsValidating: false,
+      errorCount: 0,
+      warningCount: 0,
+      infoCount: 0
     }
 
     inputs = {};
 
     addInput = (name, validate) => {
       this.inputs[name] = validate;
-    }
+    };
 
     removeInput = (name) => {
       delete this.inputs[name];
@@ -66,10 +64,9 @@ const withValidations = (WrappedComponent) => {
           <WrappedComponent
             validate={ this.validateRegisteredInputs }
             isValidating={ this.state.formIsValidating }
-            { ...Object.keys(VALIDATION_TYPES).reduce((acc, type) => ({
-              ...acc,
-              [`${type}Count`]: this.state[`${type}Count`]
-            }), {}) }
+            errorCount={ this.state.errorCount }
+            warningCount={ this.state.warningCount }
+            infoCount={ this.state.infoCount }
             { ...this.props }
           >
             { this.props.children }
@@ -79,17 +76,14 @@ const withValidations = (WrappedComponent) => {
     }
   }
 
+  WithValidations.propTypes = {
+    children: PropTypes.node // Children elements
+  };
+
   const displayName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
   WithValidations.displayName = `WithValidations(${displayName})`;
 
   return WithValidations;
 };
-
-function buildInitialValidationState() {
-  return Object.keys(VALIDATION_TYPES).reduce((acc, type) => ({
-    ...acc,
-    [`${type}Count`]: 0
-  }), {});
-}
 
 export { ValidationsContext, withValidations };

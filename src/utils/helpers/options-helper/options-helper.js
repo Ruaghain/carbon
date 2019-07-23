@@ -48,6 +48,17 @@ const OptionsHelper = {
     'warning'
   ],
 
+  pillColors: [
+    'neutral',
+    'negative',
+    'positive'
+  ],
+
+  pillRoles: [
+    'tag',
+    'status'
+  ],
+
   toast: [
     'success',
     'error'
@@ -201,6 +212,21 @@ const OptionsHelper = {
     'leaf'
   ],
 
+  shapesPortrait: [
+    'circle',
+    'square'
+  ],
+
+  sizesPortrait: [
+    'XS',
+    'S',
+    'M',
+    'ML',
+    'L',
+    'XL',
+    'XXL'
+  ],
+
   sizesFull: [
     'extra-small',
     'small',
@@ -271,6 +297,12 @@ const OptionsHelper = {
     'small',
     'medium',
     'large'
+  ],
+
+  validationTypes: [
+    'error',
+    'warning',
+    'info'
   ],
 
   inputTypes: [

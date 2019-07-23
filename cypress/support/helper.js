@@ -1,11 +1,10 @@
 import {
-  knobsTab, actionsTab, clearButtonInActions, accessibilityTab,
-  reRunTestsButtonInAccessibility,
+  knobsTab, actionsTab, clearButton, accessibilityTab,
 } from '../locators';
 import { DEBUG_FLAG } from '.';
 
 function prepareUrl(component, suffix, iFrameOnly) {
-  let url = Cypress.env('localhost');
+  let url = Cypress.config().baseUrl;
   // eslint-disable-next-line no-unused-expressions
   iFrameOnly ? url += Cypress.env('iframe') : url += Cypress.env('story');
   return url + component.toLowerCase().replace(/ /g, '-') + Cypress.env(suffix);
@@ -24,12 +23,8 @@ export function clickAccessebilityTab(iFrameOnly = false) {
   if (!iFrameOnly) accessibilityTab().click();
 }
 
-export function reRunAccesibilityTests() {
-  reRunTestsButtonInAccessibility().click();
-}
-
 export function clickClear() {
-  clearButtonInActions().click();
+  clearButton().click();
 }
 
 export function dragAndDrop(draggableElement, destinationPosition, startFromHight) {
@@ -66,7 +61,9 @@ export function pressESCKey() {
   cy.iFrame('body').type('{shift}{esc}');
 }
 
-export function pressTABKey() {
+export function pressTABKey(count) {
   // cy.iFrame('body').tab(); uncomment when this function will be implemented by Cypress team
-  cy.iFrame('body').trigger('tab', { force: true });
+  for (let i = 0; i < count; i++) {
+    cy.iFrame('body').trigger('tab', { force: true });
+  }
 }

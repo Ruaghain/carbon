@@ -43,19 +43,20 @@ Feature: Link component
 
 @positive
   Scenario Outline: Change link component icon align position to <iconAlign>
-    When I select icon to "add"
-      And I select iconAlign to "<iconAlign>"
+    Given I select icon to "add"
+    When I select iconAlign to "<iconAlign>"
     Then icon align is set to "<iconAlign>"
     Examples:
       | iconAlign |
       | left      |
       | right     |
-     
+
   @positive
   Scenario Outline: Change tooltip align to <tooltipAlign>
-    When I select icon to "add"
+    Given I select icon to "add"
       And I set tooltipMessage to "sample message"
-      And I select tooltipAlign to "<tooltipAlign>"
+    When I select tooltipAlign to "<tooltipAlign>"
+      And I select tooltipPosition to "bottom"
       And I hover mouse onto icon
     Then tooltipAlign is set to "<tooltipAlign>"
     Examples:
@@ -67,32 +68,32 @@ Feature: Link component
       | center       |
 
   @positive
-  Scenario Outline: Change tooltip position to <tooltipPosition>
-    When I select icon to "add"
+  Scenario Outline: Change tooltip tooltipPosition to <tooltipPosition>
+    Given I select icon to "add"
       And I set tooltipMessage to "sample message"
-      And I select tooltipPosition to "<tooltipPosition>"
+    When I select tooltipPosition to "<tooltipPosition>"
+      And I select tooltipAlign to "center"
       And I hover mouse onto icon
     Then tooltipPosition is set to "<tooltipPosition>"
     Examples:
       | tooltipPosition |
-      | left            |
       | right           |
-      | top             |
+      | left            |
       | bottom          |
+      | top             |
+      | right           |
 
   @positive
   Scenario: Check tabbable and focus the link componenent
-    When I check tabbable checkbox
+    When I uncheck tabbable checkbox
+      And I check tabbable checkbox
     Then Link is tabbable
-      And I hit Tab key
-      And I hit Tab key
+      And I hit Tab key 2 times
       And Link component is focused
 
   @positive
   Scenario: Uncheck tabbable
-    When I check tabbable checkbox
-      And I uncheck tabbable checkbox
+    When I uncheck tabbable checkbox
     Then Link is not tabbable
-      And I hit Tab key
-      And I hit Tab key
+      And I hit Tab key 2 times
       And Link component is not focused
